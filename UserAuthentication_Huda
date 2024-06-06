@@ -1,1 +1,64 @@
+import java.io.*;
+import java.util.ArrayList;
 
+/**
+ *
+ * @author Owner
+ */
+
+public class UserAuthentication {
+   private ArrayList<User> users;
+
+    public UserAuthentication() {
+        users = new ArrayList<>();
+        loadUsers();
+    }
+
+    public void loadUsers() {
+        try (BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 3) {
+                    users.add(new User(parts[0], parts[1], parts[2]));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveUsers() {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("users.txt"))) {
+            for (User user : users) {
+                bw.write(user.getUsername() + "," + user.getPassword() + "," + user.getFullName());
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean authenticate(String username, String password) {
+        for (User user : users) {
+            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void registerUser(String username, String password, String fullName) {
+        users.add(new User(username, password, fullName));
+        saveUsers();
+    }
+
+    public User getUser(String username) {
+        for (User user : users) {
+            if (user.getUsername().equals(username)) {
+                return user;
+            }
+        }
+        return null;
+    }
+}
