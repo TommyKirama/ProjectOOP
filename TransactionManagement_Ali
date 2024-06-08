@@ -1,1 +1,63 @@
+package javafx.example.groupproject;
+import java.io.*;
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
+public class Transaction implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String type;
+    private double amount;
+    private String category;
+    private Date date;
+    private String description;
+
+    private static final String TRANSACTION_DATA_FILE = "transactions.dat";
+
+    public Transaction(String type, double amount, String category, Date date, String description) {
+        this.type = type;
+        this.amount = amount;
+        this.category = category;
+        this.date = date;
+        this.description = description;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public static List<Transaction> loadTransactions() throws IOException {
+        File file = new File(TRANSACTION_DATA_FILE);
+        if (!file.exists()) {
+            return new ArrayList<>();
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            return (List<Transaction>) ois.readObject();
+        } catch (ClassNotFoundException e) {
+            throw new IOException("Data file corrupted");
+        }
+    }
+
+    public static void saveTransactions(List<Transaction> transactions) throws IOException {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(TRANSACTION_DATA_FILE))) {
+            oos.writeObject(transactions);
+        }
+    }
+}
