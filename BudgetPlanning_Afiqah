@@ -1,40 +1,44 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class BudgetPlanning {
     private User user;
     private UserAuthentication userManager;
-    private String budgetInfo;
 
     public BudgetPlanning(User user, UserAuthentication userManager) {
         this.user = user;
         this.userManager = userManager;
-        this.budgetInfo = loadBudgetPlanning();
-        displayBudgetPlanning();
     }
 
     public void displayBudgetPlanning() {
-        
         Stage stage = new Stage();
         stage.setTitle("Budget Planning");
 
         // Labels and TextFields for input
         Label categoryLabel = new Label("Category:");
         TextField categoryField = new TextField();
-        Label amountLabel = new Label("Amount:");
+        Label amountLabel = new Label("Budget Amount:");
         TextField amountField = new TextField();
-        Label periodLabel = new Label("Period:");
-        TextField periodField = new TextField();
 
         // Button to add budget
         Button addButton = new Button("Add Budget");
-        addButton.setOnAction(e -> addBudget(categoryField.getText(), amountField.getText(), periodField.getText()));
+        addButton.setOnAction(e -> {
+            addBudget(categoryField.getText(), amountField.getText());
+        });
+        // Button to close transaction
+        Button doneButton = new Button("Done");
+        doneButton.setOnAction(e -> {
+            stage.close();
+            new Dashboard(user, userManager);
+        });
 
         // Layout setup
         GridPane layout = new GridPane();
@@ -43,20 +47,29 @@ public class BudgetPlanning {
         layout.setHgap(10);
         layout.addRow(0, categoryLabel, categoryField);
         layout.addRow(1, amountLabel, amountField);
-        layout.addRow(2, periodLabel, periodField);
-        layout.add(addButton, 0, 3);
+        layout.add(addButton, 0, 2);
+        layout.add(doneButton, 0, 4);
 
-        Scene scene = new Scene(layout, 400, 200);
+        Scene scene = new Scene(layout, 800, 400);
         stage.setScene(scene);
         stage.show();
     }
 
-    private void addBudget(String category, String amount, String period) {
+    private void addBudget(String category, String amount) {
         try {
             double amountValue = Double.parseDouble(amount);
-            System.out.println("Category: " + category + ", Amount: $" + amountValue + ", Period: " + period);
+
+            // Write the new budget entry to the user's file
+            try (FileWriter writer = new FileWriter(user.getUsername() + ".txt", true)) {
+                writer.write(  category + ",0.0," + amountValue + "\n");
+                showNoti("Status", "Budget has been updated.");
+            }
+
+            System.out.println("Category: " + category + ", Budget Amount: $" + amountValue);
         } catch (NumberFormatException e) {
             showAlert("Invalid Input", "Amount should be a number.");
+        } catch (IOException e) {
+            showAlert("File Error", "Could not write to the user file.");
         }
     }
 
@@ -67,20 +80,11 @@ public class BudgetPlanning {
         alert.setContentText(message);
         alert.showAndWait();
     }
-    
-    private String loadBudgetPlanning() {
-        try (BufferedReader br = new BufferedReader(new FileReader("users.txt"))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 4 && parts[0].equals(user.getUsername())) {
-                    return parts[3]; // Return budget planning info for the user
-                }
-            }
-            System.out.println("Budget planning info loaded successfully");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+    private void showNoti(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
