@@ -5,11 +5,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
-/**
- *
- * @author Owner
- */
-public class MainApp extends Application {
+public class App extends Application {
     private UserAuthentication userManager;
 
     @Override
@@ -18,69 +14,96 @@ public class MainApp extends Application {
 
         primaryStage.setTitle("Login/Register");
 
-        //creating the GridPane layout
+        // Creating the GridPane layout
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setVgap(8);
         grid.setHgap(10);
 
-        //username Label and TextField
+        // Username Label and TextField
         Label usernameLabel = new Label("Username:");
         GridPane.setConstraints(usernameLabel, 0, 0);
         TextField usernameInput = new TextField();
         GridPane.setConstraints(usernameInput, 1, 0);
 
-        //password Label and PasswordField
+        // Password Label and PasswordField
         Label passwordLabel = new Label("Password:");
         GridPane.setConstraints(passwordLabel, 0, 1);
         PasswordField passwordInput = new PasswordField();
         GridPane.setConstraints(passwordInput, 1, 1);
 
-        //full Name Label and TextField
-        Label fullNameLabel = new Label("Full Name (for registration):");
+        // Full Name Label and TextField (Initially Hidden)
+        Label fullNameLabel = new Label("Full Name:");
         GridPane.setConstraints(fullNameLabel, 0, 2);
         fullNameLabel.setVisible(false);
         TextField fullNameInput = new TextField();
         GridPane.setConstraints(fullNameInput, 1, 2);
-        fullNameInput.setVisible(false); // Initially hide the full name input
+        fullNameInput.setVisible(false);
 
-        //register button
-        Button registerButton = new Button("Register");
-        GridPane.setConstraints(registerButton, 1, 3);
-        registerButton.setOnAction(e -> {
-            if (fullNameInput.isVisible()) { // If full name input is visible, perform registration
-                String username = usernameInput.getText();
-                String password = passwordInput.getText();
-                String fullName = fullNameInput.getText();
-                userManager.registerUser(username, password, fullName);
-                showAlert(Alert.AlertType.INFORMATION, "Registration Successful", "User registered successfully");
-            } else {        
-                // if fullname part is hidden, show it
-                fullNameInput.setVisible(true);
-                fullNameLabel.setVisible(true);
-                registerButton.setText("Confirm");
-            }
-        });
+        // Total Income Label and TextField (Initially Hidden)
+        Label totalIncomeLabel = new Label("Total Income:");
+        GridPane.setConstraints(totalIncomeLabel, 0, 3);
+        totalIncomeLabel.setVisible(false);
+        TextField totalIncomeInput = new TextField();
+        GridPane.setConstraints(totalIncomeInput, 1, 3);
+        totalIncomeInput.setVisible(false);
 
-        //login Button
+        // Login Button
         Button loginButton = new Button("Login");
-        GridPane.setConstraints(loginButton, 0, 3);
+        GridPane.setConstraints(loginButton, 0, 4);
         loginButton.setOnAction(e -> {
             String username = usernameInput.getText();
             String password = passwordInput.getText();
             if (userManager.authenticate(username, password)) {
                 User user = userManager.getUser(username);
-                showAlert(Alert.AlertType.INFORMATION, "Login Successful", "Welcome, " + user.getFullName() + "!");
+                showAlert(Alert.AlertType.INFORMATION, "Login Successful", "Welcome, " + user.getUsername() + "!");
                 primaryStage.close();
+                // Pass user and userManager to Dashboard constructor
+                new Dashboard(user, userManager);
             } else {
                 showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid credentials");
             }
         });
 
-        //adding all elements to the GridPane
-        grid.getChildren().addAll(usernameLabel, usernameInput, passwordLabel, passwordInput, fullNameLabel, fullNameInput, loginButton, registerButton);
+        // Register Button
+        Button registerButton = new Button("Register");
+        GridPane.setConstraints(registerButton, 1, 4);
+        registerButton.setOnAction(e -> {
+            // Show the full name and total income fields
+            fullNameLabel.setVisible(true);
+            fullNameInput.setVisible(true);
+            totalIncomeLabel.setVisible(true);
+            totalIncomeInput.setVisible(true);
 
-        //creating the scene
+            // Adjust the register button action
+            registerButton.setText("Submit");
+            registerButton.setOnAction(ev -> {
+                String username = usernameInput.getText();
+                String password = passwordInput.getText();
+                String fullName = fullNameInput.getText();
+                String totalIncomeStr = totalIncomeInput.getText();
+
+                if (username.isEmpty() || password.isEmpty() || fullName.isEmpty() || totalIncomeStr.isEmpty()) {
+                    showAlert(Alert.AlertType.ERROR, "Registration Failed", "All fields are required");
+                } else {
+                    try {
+                        double totalIncome = Double.parseDouble(totalIncomeStr);
+                        userManager.registerUser(username, password, fullName, totalIncome);
+                        showAlert(Alert.AlertType.INFORMATION, "Registration Successful", "User registered successfully");
+                        primaryStage.close();
+                        User user = userManager.getUser(username);
+                        new Dashboard(user, userManager);
+                    } catch (NumberFormatException ex) {
+                        showAlert(Alert.AlertType.ERROR, "Registration Failed", "Total income should be a valid number");
+                    }
+                }
+            });
+        });
+
+        // Adding all elements to the GridPane
+        grid.getChildren().addAll(usernameLabel, usernameInput, passwordLabel, passwordInput, fullNameLabel, fullNameInput, totalIncomeLabel, totalIncomeInput, loginButton, registerButton);
+
+        // Creating the Scene
         Scene scene = new Scene(grid, 400, 250);
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -97,5 +120,4 @@ public class MainApp extends Application {
     public static void main(String[] args) {
         launch(args);
     }
-    
 }
