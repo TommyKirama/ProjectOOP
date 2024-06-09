@@ -15,34 +15,54 @@ public class MainApp extends Application {
     @Override
     public void start(Stage primaryStage) {
         userManager = new UserAuthentication();
-        
+
         primaryStage.setTitle("Login/Register");
 
-        //Creating the GridPane layout
+        //creating the GridPane layout
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setVgap(8);
         grid.setHgap(10);
 
-        //Username Label and TextField
+        //username Label and TextField
         Label usernameLabel = new Label("Username:");
         GridPane.setConstraints(usernameLabel, 0, 0);
         TextField usernameInput = new TextField();
         GridPane.setConstraints(usernameInput, 1, 0);
 
-        //Password Label and PasswordField
+        //password Label and PasswordField
         Label passwordLabel = new Label("Password:");
         GridPane.setConstraints(passwordLabel, 0, 1);
         PasswordField passwordInput = new PasswordField();
         GridPane.setConstraints(passwordInput, 1, 1);
 
-        //Full Name Label and TextField
+        //full Name Label and TextField
         Label fullNameLabel = new Label("Full Name (for registration):");
         GridPane.setConstraints(fullNameLabel, 0, 2);
+        fullNameLabel.setVisible(false);
         TextField fullNameInput = new TextField();
         GridPane.setConstraints(fullNameInput, 1, 2);
+        fullNameInput.setVisible(false); // Initially hide the full name input
 
-        //Login Button
+        //register button
+        Button registerButton = new Button("Register");
+        GridPane.setConstraints(registerButton, 1, 3);
+        registerButton.setOnAction(e -> {
+            if (fullNameInput.isVisible()) { // If full name input is visible, perform registration
+                String username = usernameInput.getText();
+                String password = passwordInput.getText();
+                String fullName = fullNameInput.getText();
+                userManager.registerUser(username, password, fullName);
+                showAlert(Alert.AlertType.INFORMATION, "Registration Successful", "User registered successfully");
+            } else {        
+                // if fullname part is hidden, show it
+                fullNameInput.setVisible(true);
+                fullNameLabel.setVisible(true);
+                registerButton.setText("Confirm");
+            }
+        });
+
+        //login Button
         Button loginButton = new Button("Login");
         GridPane.setConstraints(loginButton, 0, 3);
         loginButton.setOnAction(e -> {
@@ -50,39 +70,21 @@ public class MainApp extends Application {
             String password = passwordInput.getText();
             if (userManager.authenticate(username, password)) {
                 User user = userManager.getUser(username);
-                showAlert(Alert.AlertType.INFORMATION, "Login Successful", "Welcome, " + user.getUsername() + "!");
+                showAlert(Alert.AlertType.INFORMATION, "Login Successful", "Welcome, " + user.getFullName() + "!");
                 primaryStage.close();
             } else {
                 showAlert(Alert.AlertType.ERROR, "Login Failed", "Invalid credentials");
             }
         });
 
-        // Register Button
-        Button registerButton = new Button("Register");
-        GridPane.setConstraints(registerButton, 1, 3);
-        registerButton.setOnAction(e -> {
-            String username = usernameInput.getText();
-            String password = passwordInput.getText();
-            String fullName = fullNameInput.getText();
-            
-            // Check if the full name is empty
-            if (fullName.isEmpty()) {
-                showAlert(Alert.AlertType.ERROR, "Registration Failed", "Full name is required");
-            } else {
-                userManager.registerUser(username, password, fullName);
-                showAlert(Alert.AlertType.INFORMATION, "Registration Successful", "User registered successfully");
-            }
-        });
-
-        // Adding all elements to the GridPane
+        //adding all elements to the GridPane
         grid.getChildren().addAll(usernameLabel, usernameInput, passwordLabel, passwordInput, fullNameLabel, fullNameInput, loginButton, registerButton);
 
-        // Creating the Scene
+        //creating the scene
         Scene scene = new Scene(grid, 400, 250);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-
 
     private void showAlert(Alert.AlertType alertType, String title, String message) {
         Alert alert = new Alert(alertType);
@@ -92,9 +94,6 @@ public class MainApp extends Application {
         alert.showAndWait();
     }
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         launch(args);
     }
