@@ -20,4 +20,9 @@ public class User {
     public String getFullName() {
         return fullName;
     }
+
+    // Custom method to compare users by username
+    public boolean hasUsername(String usernameToCheck) {
+        return this.username.equals(usernameToCheck);
+    }
 }
