@@ -1,63 +1,272 @@
-package javafx.example.groupproject;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
+
 import java.io.*;
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.geometry.HPos;
+import javafx.geometry.Pos;
+import javafx.scene.layout.VBox;
 
-public class Transaction implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private String type;
-    private double amount;
-    private String category;
-    private Date date;
-    private String description;
+public class Transaction {
+    private User user;
+    private UserAuthentication userManager;
+    private static final String TRANSACDIRECTORY_PATH = "C:\\Users\\acerc\\OneDrive\\Documents\\NetBeansProjects\\ProjectOOP\\Transaction History";
 
-    private static final String TRANSACTION_DATA_FILE = "transactions.dat";
-
-    public Transaction(String type, double amount, String category, Date date, String description) {
-        this.type = type;
-        this.amount = amount;
-        this.category = category;
-        this.date = date;
-        this.description = description;
+    public Transaction(User user, UserAuthentication userManager) {
+        this.user = user;
+        this.userManager = userManager;
     }
 
-    public String getType() {
-        return type;
+    public void displayTransaction() {
+        Stage stage = new Stage();
+        stage.setTitle("Make Transaction");
+        
+        // Table for displaying budget info
+        TableView<String> tableView = new TableView<>();
+        TableColumn<String, String> dateCol = new TableColumn<>("Date");
+        TableColumn<String, String> categoryCol = new TableColumn<>("Category");
+        TableColumn<String, String> amountCol = new TableColumn<>("Amount");
+        TableColumn<String, String> descCol = new TableColumn<>("Description");
+
+        dateCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[0]));
+        categoryCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[1]));
+        amountCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[2]));
+        descCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[3]));
+
+        tableView.getColumns().addAll(dateCol, categoryCol, amountCol, descCol);
+        
+        
+        // Load data from user's text file
+        try {
+            File usertransFile = new File(TRANSACDIRECTORY_PATH + "\\" + user.getUsername() + "transac.txt");
+            Scanner scanner = new Scanner(usertransFile);
+            
+            
+
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                System.out.println("Read line: " + line); // Debug print statement
+                String[] data = line.split(",");
+                String date = data[0];
+                String category = data[1];
+                double amount = Double.parseDouble(data[2]);
+                String desc = data[3];
+
+                tableView.getItems().add(date + "," + category + "," + amount + "," + desc);
+            }
+
+            scanner.close();
+
+            // Debug print statement to check the size of items list
+            System.out.println("Items size: " + tableView.getItems().size());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        
+        
+        // Add column separators
+        tableView.setStyle("-fx-column-reorder-disabled: true;");
+        tableView.setStyle("-fx-padding: 0 5px;");
+        dateCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
+        categoryCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
+        amountCol.setStyle("-fx-border-width: 0 1px 0 1px; -fx-border-color: black;");
+        descCol.setStyle("-fx-border-width: 0 1px 0 1px; -fx-border-color: black;");
+
+      
+
+        // Labels and TextFields for input
+        Label categoryLabel = new Label("Income/Expense:");
+        TextField categoryField = new TextField();
+        Label amountLabel = new Label(" Amount:");
+        TextField amountField = new TextField();
+        Label dateLabel = new Label("Date:");
+        TextField dateField = new TextField();
+        Label descLabel = new Label(" Description:");
+        TextField descField = new TextField();
+
+        // Button to add expense
+        Button addButton = new Button("Add Transaction");
+        addButton.setOnAction(e -> {
+            if(categoryField.getText().equals("Expense")){
+                addExpense(descField.getText(), amountField.getText());
+                String date = dateField.getText();
+                String category = categoryField.getText();
+                String amount = amountField.getText();
+                String description = descField.getText();
+                
+                String csvLine = String.join(",", date, category, amount, description);
+                
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(TRANSACDIRECTORY_PATH + "\\" + user.getUsername() + "transac.txt", true))) {
+                writer.write(csvLine);
+                writer.newLine();
+             } catch (IOException ioException) {
+                ioException.printStackTrace();
+             }
+            }
+            else if(categoryField.getText().equals("Income")){
+                addIncome(descField.getText(), amountField.getText());
+                String date = dateField.getText();
+                String category = categoryField.getText();
+                String amount = amountField.getText();
+                String description = descField.getText();
+                
+                String csvLine = String.join(",", date, category, amount, description);
+                
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(TRANSACDIRECTORY_PATH + "\\" + user.getUsername() + "transac.txt", true))) {
+                writer.write(csvLine);
+                writer.newLine();
+             } catch (IOException ioException) {
+                ioException.printStackTrace();
+             }
+            }
+            
+            else
+               showAlert("Invalid Input", "Catergory should only be Income or Expenses."); 
+        });
+        
+        // Button to close transaction
+        Button doneButton = new Button("Done");
+        doneButton.setOnAction(e -> {
+            stage.close();
+            new Dashboard(user, userManager);
+        });
+
+         // Layout setup
+        GridPane inputGrid = new GridPane();
+        inputGrid.setPadding(new Insets(20));
+        inputGrid.setVgap(10);
+        inputGrid.setHgap(10);
+        inputGrid.addRow(0, dateLabel, dateField);
+        inputGrid.addRow(1, categoryLabel, categoryField);
+        inputGrid.addRow(2, amountLabel, amountField);
+        inputGrid.addRow(3, descLabel, descField);
+        inputGrid.add(addButton, 0, 4);
+        inputGrid.add(doneButton, 1, 4);
+
+        GridPane mainGrid = new GridPane();
+        mainGrid.setPadding(new Insets(20));
+        mainGrid.setVgap(20);
+        mainGrid.setHgap(20);
+        mainGrid.add(inputGrid, 0, 0);
+        mainGrid.add(tableView, 1, 0);
+        GridPane.setHalignment(tableView, HPos.CENTER);
+
+        Scene scene = new Scene(mainGrid, 800, 400);
+        stage.setScene(scene);
+        stage.show();
     }
 
-    public double getAmount() {
-        return amount;
-    }
+    private void addExpense(String category, String amount) {
+        try {
+            double amountValue = Double.parseDouble(amount);
+            List<String> lines = new ArrayList<>();
+            boolean categoryFound = false;
 
-    public String getCategory() {
-        return category;
-    }
+            // Read and update the user's file
+            try (BufferedReader reader = new BufferedReader(new FileReader(user.getUsername() + ".txt"))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith(category + ",")) {
+                        categoryFound = true;
+                        String[] parts = line.split(",");
+                        double currentExpenses = Double.parseDouble(parts[1]);
+                        double newExpenses = currentExpenses + amountValue;
+                        lines.add(parts[0] + "," + newExpenses + "," + parts[2]);
+                        showNoti("Status", "Expenses is succesfully added.");
+                        
+                    } else {
+                        lines.add(line);
+                    }
+                }
+            }
 
-    public Date getDate() {
-        return date;
-    }
+            if (!categoryFound) {
+                showAlert("Error", "Description doesn't match existing budget category.");
+                return;
+            }
 
-    public String getDescription() {
-        return description;
-    }
+            // Write the updated lines back to the file
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(user.getUsername() + ".txt"))) {
+                for (String line : lines) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            }
 
-    public static List<Transaction> loadTransactions() throws IOException {
-        File file = new File(TRANSACTION_DATA_FILE);
-        if (!file.exists()) {
-            return new ArrayList<>();
+            System.out.println("Category: " + category + ", Expense Added: $" + amountValue);
+        } catch (NumberFormatException e) {
+            showAlert("Invalid Input", "Amount should be a number.");
+        } catch (IOException e) {
+            showAlert("File Error", "Could not read or write the user file.");
+        }
+        
+    }
+    
+    private void addIncome(String category, String amount) {
+    try {
+        double amountValue = Double.parseDouble(amount);
+        List<String> lines = new ArrayList<>();
+        boolean incomeUpdated = false;
+
+        // Read and update the user's file
+        try (BufferedReader reader = new BufferedReader(new FileReader(user.getUsername() + ".txt"))) {
+            String line;
+            // Update total income (first line)
+            if ((line = reader.readLine()) != null) {
+                double currentIncome = Double.parseDouble(line);
+                double newIncome = currentIncome + amountValue;
+                lines.add(String.valueOf(newIncome));
+                incomeUpdated = true;
+            }
+
+            // Read the remaining lines
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
         }
 
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (List<Transaction>) ois.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new IOException("Data file corrupted");
+        if (!incomeUpdated) {
+            showAlert("Error", "Failed to update income.");
+            return;
         }
-    }
 
-    public static void saveTransactions(List<Transaction> transactions) throws IOException {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(TRANSACTION_DATA_FILE))) {
-            oos.writeObject(transactions);
+        // Write the updated lines back to the file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(user.getUsername() + ".txt"))) {
+            for (String updatedLine : lines) {
+                writer.write(updatedLine);
+                writer.newLine();
+            }
         }
+
+        showNoti("Status", "Income is successfully added.");
+        System.out.println("Income Added: $" + amountValue);
+    } catch (NumberFormatException e) {
+        showAlert("Invalid Input", "Amount should be a number.");
+    } catch (IOException e) {
+        showAlert("File Error", "Could not read or write the user file.");
+    }
+}
+
+    
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    private void showNoti(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
