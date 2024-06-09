@@ -1,13 +1,10 @@
 import java.io.*;
 import java.util.ArrayList;
 
-/**
- *
- * @author Owner
- */
-
 public class UserAuthentication {
-   private ArrayList<User> users;
+    private ArrayList<User> users;
+    private static final String DIRECTORY_PATH = "C:\\Users\\acerc\\OneDrive\\Documents\\NetBeansProjects\\ProjectOOP";
+    private static final String TRANSACDIRECTORY_PATH = "C:\\Users\\acerc\\OneDrive\\Documents\\NetBeansProjects\\ProjectOOP\\Transaction History";
 
     public UserAuthentication() {
         users = new ArrayList<>();
@@ -48,17 +45,59 @@ public class UserAuthentication {
         return false;
     }
 
-    public void registerUser(String username, String password, String fullName) {
+    public void registerUser(String username, String password, String fullName, double totalIncome) {
         users.add(new User(username, password, fullName));
         saveUsers();
+        createUserFile(username, totalIncome);
     }
 
     public User getUser(String username) {
         for (User user : users) {
-            if (user.getUsername().equals(username)) {
+            if (user.hasUsername(username)) {
                 return user;
             }
         }
         return null;
+    }
+
+    private void createUserFile(String username, double totalIncome) {
+        File userFile = new File(DIRECTORY_PATH + "\\" + username + ".txt");
+        File usertransFile = new File(TRANSACDIRECTORY_PATH + "\\" + username + "transac.txt");
+        try {
+            boolean isNewFile = userFile.createNewFile();
+            if (isNewFile) {
+                System.out.println("User file created: " + userFile.getName());
+            } else {
+                System.out.println("User file already exists: " + userFile.getName());
+            }
+            boolean isFile = usertransFile.createNewFile();
+            if (isNewFile) {
+                System.out.println("User history file created " );
+            } else {
+                System.out.println("User history file already exists  " );
+            }
+            // Always write total income, even if the file already existed
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(userFile))) {
+                bw.write(Double.toString(totalIncome));
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred while creating the user file.");
+            e.printStackTrace();
+        }
+    }
+
+    public void readUserFile(String username) {
+        File userFile = new File(DIRECTORY_PATH + "\\" + username + ".txt");
+        try (BufferedReader br = new BufferedReader(new FileReader(userFile))) {
+            String line;
+            System.out.println("Reading from " + username + ".txt:");
+            while ((line = br.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred while reading the user file.");
+            e.printStackTrace();
+        }
     }
 }
