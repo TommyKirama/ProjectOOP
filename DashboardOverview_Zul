@@ -1,1 +1,153 @@
+package com.mycompany.projectoop;
 
+
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import java.io.*;
+import java.util.Scanner;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.geometry.HPos;
+
+public class Dashboard {
+    private User user;
+    private UserAuthentication userManager;
+
+    public Dashboard(User user, UserAuthentication userManager) {
+        this.user = user;
+        this.userManager = userManager;
+        displayDashboard();
+    }
+
+    public void displayDashboard() {
+        int width = 576, height = 360;
+        Stage dashboardStage = new Stage();
+
+        // Accessories
+        Font font1 = Font.font("Courier New", FontWeight.BOLD, FontPosture.ITALIC, 12);
+        Font font2 = Font.font("Unicorn", FontWeight.BOLD, FontPosture.ITALIC, 20);
+        BorderStroke stroke1 = new BorderStroke(Color.PURPLE, BorderStrokeStyle.SOLID, new CornerRadii(0), new BorderWidths(2));
+        Image bg = new Image("file:///C:\\Users\\acerc\\OneDrive\\Documents\\NetBeansProjects\\ProjectOOP\\src\\main\\java\\com\\mycompany\\projectoop\\bgjavafx.jpg");
+        ImageView bgView = new ImageView(bg);
+        bgView.setFitWidth(width);
+        bgView.setFitHeight(height);
+        bgView.setPreserveRatio(false);
+
+        // Read total income from user's file
+        double totalIncome = 0;
+        try {
+            File userFile = new File(user.getUsername() + ".txt");
+            Scanner scanner = new Scanner(userFile);
+            if (scanner.hasNextLine()) {
+                totalIncome = Double.parseDouble(scanner.nextLine());
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Total Income Label
+        Label totalIncomeLabel = new Label("Total Income: " + totalIncome);
+        totalIncomeLabel.setFont(font1);
+
+        // Status label
+        Label status = new Label("Current financial status of " + user.getFullName());
+        status.setFont(font2);
+
+        // Table for displaying budget info
+        TableView<String> tableView = new TableView<>();
+        TableColumn<String, String> categoryCol = new TableColumn<>("Category");
+        TableColumn<String, String> expensesCol = new TableColumn<>("Expenses");
+        TableColumn<String, String> budgetCol = new TableColumn<>("Budget");
+        TableColumn<String, String> savingsCol = new TableColumn<>("Savings");
+
+        categoryCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[0]));
+        expensesCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[1]));
+        budgetCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[2]));
+        savingsCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[3]));
+
+        tableView.getColumns().addAll(categoryCol, expensesCol, budgetCol, savingsCol);
+
+        // Load data from user's text file
+        try {
+            File userFile = new File(user.getUsername() + ".txt");
+            Scanner scanner = new Scanner(userFile);
+            
+            // Skip the first line (total income)
+            if (scanner.hasNextLine()) {
+                scanner.nextLine();
+            }
+
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                System.out.println("Read line: " + line); // Debug print statement
+                String[] data = line.split(",");
+                String category = data[0];
+                double expenses = Double.parseDouble(data[1]);
+                double budget = Double.parseDouble(data[2]);
+                double savings = budget - expenses;
+
+                System.out.println("Category: " + category + ", Expenses: " + expenses + ", Budget: " + budget + ", Savings: " + savings); // Debug print statement
+                tableView.getItems().add(category + "," + expenses + "," + budget + "," + savings);
+            }
+
+            scanner.close();
+
+            // Debug print statement to check the size of items list
+            System.out.println("Items size: " + tableView.getItems().size());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Add column separators
+        tableView.setStyle("-fx-column-reorder-disabled: true;");
+        tableView.setStyle("-fx-padding: 0 5px;");
+        expensesCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
+        budgetCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
+        savingsCol.setStyle("-fx-border-width: 0 1px 0 1px; -fx-border-color: black;");
+        categoryCol.setStyle("-fx-border-width: 0 1px 0 1px; -fx-border-color: black;");
+
+        GridPane grid = new GridPane();
+        grid.setVgap(10);
+        grid.setHgap(10);
+        grid.add(tableView, 13, 0);
+        GridPane.setHalignment(tableView, HPos.CENTER);
+
+        // Budget Planning Button
+        Button planButton = new Button("Budget Planning");
+        planButton.setOnAction(e -> {
+            BudgetPlanning budgetPlanning = new BudgetPlanning(user, userManager);
+            budgetPlanning.displayBudgetPlanning();
+            dashboardStage.close();
+        });
+
+        // Transaction Button
+        Button transacButton = new Button("Make Transaction");
+        transacButton.setOnAction(e -> {
+            Transaction transaction = new Transaction(user, userManager);
+            transaction.displayTransaction();
+            dashboardStage.close();
+        });
+
+        VBox sum = new VBox();
+        sum.getChildren().addAll(status,totalIncomeLabel,  grid, planButton, transacButton);
+        sum.setAlignment(Pos.CENTER);
+        sum.setSpacing(10);
+        StackPane root = new StackPane(bgView, sum);
+
+        Scene scene = new Scene(root, width, height);
+
+        dashboardStage.setScene(scene);
+        dashboardStage.setTitle("Dashboard");
+        dashboardStage.show();
+    }
+}
