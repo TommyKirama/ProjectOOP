@@ -1,6 +1,5 @@
 package com.mycompany.projectoop;
 
-
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -35,7 +34,7 @@ public class Dashboard {
         Font font1 = Font.font("Courier New", FontWeight.BOLD, FontPosture.ITALIC, 12);
         Font font2 = Font.font("Unicorn", FontWeight.BOLD, FontPosture.ITALIC, 20);
         BorderStroke stroke1 = new BorderStroke(Color.PURPLE, BorderStrokeStyle.SOLID, new CornerRadii(0), new BorderWidths(2));
-        Image bg = new Image("file:///C:\\Users\\acerc\\OneDrive\\Documents\\NetBeansProjects\\ProjectOOP\\src\\main\\java\\com\\mycompany\\projectoop\\bgjavafx.jpg");
+        Image bg = new Image("file:///D:\\MyProperties\\CSCI 1301 Sect 07 (OOP)OBJECT ORIENTED PROGRAMMING\\GroupProjectTest2\\bank.JPG");
         ImageView bgView = new ImageView(bg);
         bgView.setFitWidth(width);
         bgView.setFitHeight(height);
@@ -77,7 +76,7 @@ public class Dashboard {
         periodCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[3]));
         savingsCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[4]));
         limitCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[5]));
-        
+
 
         tableView.getColumns().addAll(categoryCol, expensesCol, budgetCol, periodCol,savingsCol,limitCol);
 
@@ -85,7 +84,7 @@ public class Dashboard {
         try {
             File userFile = new File(user.getUsername() + ".txt");
             Scanner scanner = new Scanner(userFile);
-            
+
             // Skip the first line (total income)
             if (scanner.hasNextLine()) {
                 scanner.nextLine();
