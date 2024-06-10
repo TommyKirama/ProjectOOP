@@ -2,14 +2,20 @@ package com.mycompany.projectoop;
 
 public class User extends Person{
     private String password;
+    private String username;
 
     public User(String username, String password, String fullName) {
-        super(username, fullName);
+        super(fullName);
+        this.username = username;
         this.password = password;
     }
 
     public String getPassword() {
         return password;
+    }
+
+    public String getusername() {
+        return username;
     }
 
     // Custom method to compare users by username
