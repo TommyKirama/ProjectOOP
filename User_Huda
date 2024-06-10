@@ -11,4 +11,9 @@ public class User extends Person{
     public String getPassword() {
         return password;
     }
+
+    // Custom method to compare users by username
+    public boolean hasUsername(String usernameToCheck) {
+        return this.username.equals(usernameToCheck);
+    }
 }
