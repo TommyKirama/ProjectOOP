@@ -1,3 +1,6 @@
+package com.mycompany.projectoop;
+
+
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -72,11 +75,11 @@ public class Transaction {
         
         // Add column separators
         tableView.setStyle("-fx-column-reorder-disabled: true;");
-        tableView.setStyle("-fx-padding: 0 5px;");
+        tableView.setStyle("-fx-padding: 0 0;");
         dateCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
         categoryCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
         amountCol.setStyle("-fx-border-width: 0 1px 0 1px; -fx-border-color: black;");
-        descCol.setStyle("-fx-border-width: 0 1px 0 1px; -fx-border-color: black;");
+        descCol.setStyle("-fx-border-width: 0 0 0 1px; -fx-border-color: black;");
 
       
 
@@ -177,7 +180,7 @@ public class Transaction {
                         String[] parts = line.split(",");
                         double currentExpenses = Double.parseDouble(parts[1]);
                         double newExpenses = currentExpenses + amountValue;
-                        lines.add(parts[0] + "," + newExpenses + "," + parts[2]);
+                        lines.add(parts[0] + "," + newExpenses + "," + parts[2] + "," + parts[3]);
                         showNoti("Status", "Expenses is succesfully added.");
                         
                     } else {
