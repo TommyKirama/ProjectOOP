@@ -1,12 +1,11 @@
+package javafx.example.groupprojecttest2;
 
-
-import javafx.application.Application;
 import javafx.stage.Stage;
 
-public class User extends Application {
-    private String username;
-    private String password;
-    private String fullName;
+public class User extends AdminUser {
+    private final String username;
+    private final String password;
+    private final String fullName;
 
     public User(String username, String password, String fullName) {
         this.username = username;
@@ -17,16 +16,17 @@ public class User extends Application {
     public String getUsername() {
         return username;
     }
-
+    @Override
     public String getPassword() {
         return password;
     }
-
+    @Override
     public String getFullName() {
         return fullName;
     }
 
     // Custom method to compare users by username
+    @Override
     public boolean hasUsername(String usernameToCheck) {
         return this.username.equals(usernameToCheck);
     }
