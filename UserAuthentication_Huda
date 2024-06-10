@@ -1,12 +1,12 @@
-package com.mycompany.projectoop;
+
 
 import java.io.*;
 import java.util.ArrayList;
 
 public class UserAuthentication {
     private ArrayList<User> users;
-    private static final String DIRECTORY_PATH = "C:\\Users\\acerc\\OneDrive\\Documents\\NetBeansProjects\\ProjectOOP";
-    private static final String TRANSACDIRECTORY_PATH = "C:\\Users\\acerc\\OneDrive\\Documents\\NetBeansProjects\\ProjectOOP\\Transaction History";
+    private static final String DIRECTORY_PATH = "D:\\MyProperties\\CSCI 1301 Sect 07 (OOP)OBJECT ORIENTED PROGRAMMING\\GroupProjectTest2";
+    private static final String TRANSACDIRECTORY_PATH = "D:\\MyProperties\\CSCI 1301 Sect 07 (OOP)OBJECT ORIENTED PROGRAMMING\\GroupProjectTest2";
 
     public UserAuthentication() {
         users = new ArrayList<>();
