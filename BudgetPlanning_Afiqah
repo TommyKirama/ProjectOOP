@@ -1,11 +1,12 @@
+package com.mycompany.projectoop;
+
+
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
+import javafx.scene.control.ComboBox;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -27,18 +28,31 @@ public class BudgetPlanning {
         TextField categoryField = new TextField();
         Label amountLabel = new Label("Budget Amount:");
         TextField amountField = new TextField();
+        
+        
+        // ComboBox for period
+        Label periodLabel = new Label("Period:");
+        ComboBox<String> periodComboBox = new ComboBox<>();
+        periodComboBox.getItems().addAll("Daily", "Weekly", "Monthly");
 
         // Button to add budget
         Button addButton = new Button("Add Budget");
         addButton.setOnAction(e -> {
-            addBudget(categoryField.getText(), amountField.getText());
+            String selectedPeriod = periodComboBox.getValue();
+            addBudget(categoryField.getText(), amountField.getText(),selectedPeriod);
         });
         // Button to close transaction
         Button doneButton = new Button("Done");
         doneButton.setOnAction(e -> {
             stage.close();
             new Dashboard(user, userManager);
+            
+            
+            
         });
+        
+        
+        
 
         // Layout setup
         GridPane layout = new GridPane();
@@ -47,7 +61,8 @@ public class BudgetPlanning {
         layout.setHgap(10);
         layout.addRow(0, categoryLabel, categoryField);
         layout.addRow(1, amountLabel, amountField);
-        layout.add(addButton, 0, 2);
+        layout.addRow(2, periodLabel, periodComboBox);
+        layout.add(addButton, 0, 3);
         layout.add(doneButton, 0, 4);
 
         Scene scene = new Scene(layout, 800, 400);
@@ -55,13 +70,13 @@ public class BudgetPlanning {
         stage.show();
     }
 
-    private void addBudget(String category, String amount) {
+    private void addBudget(String category, String amount , String period) {
         try {
             double amountValue = Double.parseDouble(amount);
 
             // Write the new budget entry to the user's file
             try (FileWriter writer = new FileWriter(user.getUsername() + ".txt", true)) {
-                writer.write(  category + ",0.0," + amountValue + "\n");
+                writer.write(  category + ",0.0," + amountValue + "," + period + "\n");
                 showNoti("Status", "Budget has been updated.");
             }
 
