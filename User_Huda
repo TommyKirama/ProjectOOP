@@ -1,3 +1,5 @@
+package com.mycompany.projectoop;
+
 public class User {
     private String username;
     private String password;
