@@ -5,7 +5,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -106,6 +105,8 @@ public class Dashboard {
                     limit = "Nearing budget";
                 else if(savings<0)
                     limit = "Overspent";
+                else if(savings==0)
+                    limit = "Limit Reached";
                 else
                     limit = "Okay";
 
