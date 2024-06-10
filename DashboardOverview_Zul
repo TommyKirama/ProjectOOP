@@ -69,13 +69,18 @@ public class Dashboard {
         TableColumn<String, String> expensesCol = new TableColumn<>("Expenses");
         TableColumn<String, String> budgetCol = new TableColumn<>("Budget");
         TableColumn<String, String> savingsCol = new TableColumn<>("Savings");
+        TableColumn<String, String> limitCol = new TableColumn<>("Status");
+        TableColumn<String, String> periodCol = new TableColumn<>("Period");
 
         categoryCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[0]));
         expensesCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[1]));
         budgetCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[2]));
-        savingsCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[3]));
+        periodCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[3]));
+        savingsCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[4]));
+        limitCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[5]));
+        
 
-        tableView.getColumns().addAll(categoryCol, expensesCol, budgetCol, savingsCol);
+        tableView.getColumns().addAll(categoryCol, expensesCol, budgetCol, periodCol,savingsCol,limitCol);
 
         // Load data from user's text file
         try {
@@ -94,10 +99,18 @@ public class Dashboard {
                 String category = data[0];
                 double expenses = Double.parseDouble(data[1]);
                 double budget = Double.parseDouble(data[2]);
+                String period = data[3];
                 double savings = budget - expenses;
+                String limit = "tak isi";
+                if(0<savings && savings<(0.1*budget))
+                    limit = "Nearing budget";
+                else if(savings<0)
+                    limit = "Overspent";
+                else
+                    limit = "Okay";
 
-                System.out.println("Category: " + category + ", Expenses: " + expenses + ", Budget: " + budget + ", Savings: " + savings); // Debug print statement
-                tableView.getItems().add(category + "," + expenses + "," + budget + "," + savings);
+                System.out.println("Category: " + category + ", Expenses: " + expenses + ", Budget: " + budget + ", Savings: " + savings + ", Period: " + period); // Debug print statement
+                tableView.getItems().add(category + "," + expenses + "," + budget + "," + period + "," + savings + "," + limit);
             }
 
             scanner.close();
@@ -110,16 +123,18 @@ public class Dashboard {
 
         // Add column separators
         tableView.setStyle("-fx-column-reorder-disabled: true;");
-        tableView.setStyle("-fx-padding: 0 5px;");
+        tableView.setStyle("-fx-padding: 0 0;");
         expensesCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
         budgetCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
-        savingsCol.setStyle("-fx-border-width: 0 1px 0 1px; -fx-border-color: black;");
-        categoryCol.setStyle("-fx-border-width: 0 1px 0 1px; -fx-border-color: black;");
+        savingsCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
+        categoryCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
+        periodCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
+        limitCol.setStyle("-fx-border-width: 0 0 0 0; -fx-border-color: black;");
 
         GridPane grid = new GridPane();
         grid.setVgap(10);
         grid.setHgap(10);
-        grid.add(tableView, 13, 0);
+        grid.add(tableView, 5, 0);
         GridPane.setHalignment(tableView, HPos.CENTER);
 
         // Budget Planning Button
