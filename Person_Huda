@@ -3,16 +3,10 @@ package com.mycompany.projectoop;
 
 //for inheritance
 public abstract class Person {
-    private String username;
     private String fullName;
 
-    public Person(String username, String fullName) {
-        this.username = username;
+    public Person(String fullName) {
         this.fullName = fullName;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public String getFullName() {
