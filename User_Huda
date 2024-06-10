@@ -1,6 +1,9 @@
-package com.mycompany.projectoop;
 
-public class User {
+
+import javafx.application.Application;
+import javafx.stage.Stage;
+
+public class User extends Application {
     private String username;
     private String password;
     private String fullName;
@@ -26,5 +29,10 @@ public class User {
     // Custom method to compare users by username
     public boolean hasUsername(String usernameToCheck) {
         return this.username.equals(usernameToCheck);
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+
     }
 }
