@@ -1,3 +1,6 @@
+package javafx.example.groupprojecttest2;
+
+import javafx.stage.Stage;
 
 public abstract class AdminUser {
     private String username;
@@ -10,6 +13,9 @@ public abstract class AdminUser {
         this.fullName = fullName;
     }
 
+    protected AdminUser() {
+    }
+
 
     public String getUsername() {
         return username;
@@ -19,7 +25,10 @@ public abstract class AdminUser {
         return password;
     }
 
-    public String hasUsername() {
-        return fullName;
-    }
+    public abstract String getFullName();
+
+    // Custom method to compare users by username
+    public abstract boolean hasUsername(String usernameToCheck);
+
+    public abstract void start(Stage primaryStage) throws Exception;
 }
