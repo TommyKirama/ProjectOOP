@@ -1,4 +1,5 @@
-package javafx.example.groupprojecttest2;
+package com.mycompany.projectoop;
+
 
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -39,6 +40,11 @@ public class BudgetPlanning {
         Label periodLabel = new Label("Period:");
         ComboBox<String> periodComboBox = new ComboBox<>();
         periodComboBox.getItems().addAll("Daily", "Weekly", "Monthly");
+        
+        Label existingBudgetsLabel = new Label("Existing Budgets:");
+        ComboBox<String> existingBudgetsComboBox = new ComboBox<>();
+        List<String> existingBudgets = getBudgetCategories();
+        existingBudgetsComboBox.getItems().addAll(existingBudgets);
 
         // Button to add budget
         Button addButton = new Button("Add Budget");
@@ -46,6 +52,15 @@ public class BudgetPlanning {
             String selectedPeriod = periodComboBox.getValue();
             addBudget(categoryField.getText(), amountField.getText(), selectedPeriod);
         });
+        
+        // Button to edit budget
+        Button editButton = new Button("Edit Budget");
+        editButton.setOnAction(e -> {
+            String selectedBudget = existingBudgetsComboBox.getValue();
+            editBudget(selectedBudget, existingBudgetsComboBox.getValue(), amountField.getText(), periodComboBox.getValue());
+        });
+        
+        
         // Button to close transaction
         Button doneButton = new Button("Done");
         doneButton.setOnAction(e -> {
@@ -56,14 +71,21 @@ public class BudgetPlanning {
 
         // Layout setup
         GridPane layout = new GridPane();
-        layout.setPadding(new Insets(20));
-        layout.setVgap(10);
+        layout.setPadding(new Insets(10, 10, 10, 10));
+        layout.setVgap(8);
         layout.setHgap(10);
-        layout.addRow(0, categoryLabel, categoryField);
-        layout.addRow(1, amountLabel, amountField);
-        layout.addRow(2, periodLabel, periodComboBox);
-        layout.add(addButton, 0, 3);
-        layout.add(doneButton, 0, 4);
+
+        layout.add(categoryLabel, 0, 0);
+        layout.add(categoryField, 1, 0);
+        layout.add(amountLabel, 0, 1);
+        layout.add(amountField, 1, 1);
+        layout.add(periodLabel, 0, 2);
+        layout.add(periodComboBox, 1, 2);
+        layout.add(existingBudgetsLabel, 0, 3);
+        layout.add(existingBudgetsComboBox, 1, 3);
+        layout.add(addButton, 0, 4);
+        layout.add(editButton, 1, 4);
+        layout.add(doneButton, 1, 5);
 
         Scene scene = new Scene(layout, 800, 400);
         stage.setScene(scene);
@@ -86,6 +108,60 @@ public class BudgetPlanning {
         } catch (IOException e) {
             showAlert("File Error", "Could not write to the user file.");
         }
+    }
+    
+    
+    
+     private void editBudget(String selectedBudget, String newCategory, String newAmount, String newPeriod) {
+         
+         //kena ade ni kalau tak dia tiaw pi padam 1st line kat textfile
+         double totalIncome = 0;
+        try {
+            File userFile = new File(user.getUsername() + ".txt");
+            Scanner scanner = new Scanner(userFile);
+            if (scanner.hasNextLine()) {
+                totalIncome = Double.parseDouble(scanner.nextLine());
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        List<String> budgets = getCategories();
+            try (FileWriter writer = new FileWriter(user.getUsername() + ".txt")) {
+                writer.write(totalIncome + "\n"); // Write totalIncome first
+
+                for (String budget : budgets) {
+                    String[] parts = budget.split(",");
+                    if (parts.length > 0 && parts[0].equals(selectedBudget)) {
+                        writer.write(newCategory + ",0.0," + newAmount + "," + newPeriod + "\n");
+                    } else {
+                        writer.write(budget + "\n");
+                    }
+                }
+
+                showNoti("Status", "Budget has been updated.");
+        } catch (IOException e) {
+            showAlert("File Error", "Could not write to the user file.");
+        }
+    }
+     
+     private List<String> getBudgetCategories() {
+        List<String> categories = new ArrayList<>();
+        try (Scanner scanner = new Scanner(new File(user.getUsername() + ".txt"))) {
+            if (scanner.hasNextLine()) {
+                scanner.nextLine(); // Skip the first line
+            }
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] parts = line.split(",");
+                if (parts.length > 0) {
+                    categories.add(parts[0]); // Add only the category part
+                }
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return categories;
     }
 
     private void showAlert(String title, String message) {
@@ -133,4 +209,3 @@ public class BudgetPlanning {
         return false;
     }
 }
-
