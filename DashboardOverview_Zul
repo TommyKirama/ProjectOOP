@@ -1,9 +1,14 @@
-package javafx.example.groupprojecttest2;
+package com.mycompany.projectoop;
 
+
+import javafx.animation.KeyFrame;
+import javafx.animation.KeyValue;
+import javafx.animation.Timeline;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.geometry.Pos;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -31,16 +36,15 @@ public class Dashboard {
         Stage dashboardStage = new Stage();
 
         // Accessories
-        Font font1 = Font.font("Courier New", FontWeight.BOLD, FontPosture.ITALIC, 12);
+        Font font1 = Font.font("Courier New", FontWeight.BOLD, FontPosture.ITALIC, 18);
         Font font2 = Font.font("Unicorn", FontWeight.BOLD, FontPosture.ITALIC, 20);
-        BorderStroke stroke1 = new BorderStroke(Color.PURPLE, BorderStrokeStyle.SOLID, new CornerRadii(0), new BorderWidths(2));
-        Image bg = new Image("file:///D:\\MyProperties\\CSCI 1301 Sect 07 (OOP)OBJECT ORIENTED PROGRAMMING\\GroupProjectTest2\\image.JPG");
+        Image bg = new Image("file:///C:\\Users\\acerc\\OneDrive\\Documents\\NetBeansProjects\\ProjectOOP\\src\\main\\java\\com\\mycompany\\projectoop\\bgjavafx.jpg");
         ImageView bgView = new ImageView(bg);
         bgView.setFitWidth(width);
         bgView.setFitHeight(height);
         bgView.setPreserveRatio(false);
 
-        // Read total income from user's file
+        // baca total income from user's file
         double totalIncome = 0;
         try {
             File userFile = new File(user.getUsername() + ".txt");
@@ -56,6 +60,20 @@ public class Dashboard {
         // Total Income Label
         Label totalIncomeLabel = new Label("Total Income: " + totalIncome);
         totalIncomeLabel.setFont(font1);
+        StackPane totalIncomeBox = new StackPane(totalIncomeLabel);
+        totalIncomeBox.setStyle("-fx-padding: 10px; -fx-border-width: 5px; -fx-background-color: white;");
+        totalIncomeBox.setMaxWidth(300); 
+
+        //animating outline
+        Timeline timeline = new Timeline(
+            new KeyFrame(Duration.ZERO, new KeyValue(totalIncomeBox.styleProperty(), "-fx-border-color: red;")),
+            new KeyFrame(Duration.seconds(0.5), new KeyValue(totalIncomeBox.styleProperty(), "-fx-border-color: blue;")),
+            new KeyFrame(Duration.seconds(1), new KeyValue(totalIncomeBox.styleProperty(), "-fx-border-color: green;")),
+            new KeyFrame(Duration.seconds(1.5), new KeyValue(totalIncomeBox.styleProperty(), "-fx-border-color: yellow;")),
+            new KeyFrame(Duration.seconds(2), new KeyValue(totalIncomeBox.styleProperty(), "-fx-border-color: red;"))
+        );
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
 
         // Status label
         Label status = new Label("Current financial status of " + user.getFullName());
@@ -77,8 +95,7 @@ public class Dashboard {
         savingsCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[4]));
         limitCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[5]));
 
-
-        tableView.getColumns().addAll(categoryCol, expensesCol, budgetCol, periodCol,savingsCol,limitCol);
+        tableView.getColumns().addAll(categoryCol, expensesCol, budgetCol, periodCol, savingsCol, limitCol);
 
         // Load data from user's text file
         try {
@@ -100,11 +117,11 @@ public class Dashboard {
                 String period = data[3];
                 double savings = budget - expenses;
                 String limit = "tak isi";
-                if(0<savings && savings<(0.1*budget))
+                if (0 < savings && savings < (0.1 * budget))
                     limit = "Nearing budget";
-                else if(savings<0)
+                else if (savings < 0)
                     limit = "Overspent";
-                else if(savings==0)
+                else if (savings == 0)
                     limit = "Limit Reached";
                 else
                     limit = "Okay";
@@ -149,12 +166,21 @@ public class Dashboard {
         Button transacButton = new Button("Make Transaction");
         transacButton.setOnAction(e -> {
             Transaction transaction = new Transaction(user, userManager);
-                transaction.displayTransaction();
+            transaction.displayTransaction();
             dashboardStage.close();
+        });
+        
+        // Log Out Button
+        Button logoutButton = new Button("Log Out");
+        logoutButton.setOnAction(e -> {
+            dashboardStage.close();
+            Stage loginStage = new Stage();
+            App app = new App();
+            app.start(loginStage);
         });
 
         VBox sum = new VBox();
-        sum.getChildren().addAll(status,totalIncomeLabel,  grid, planButton, transacButton);
+        sum.getChildren().addAll(status, totalIncomeBox, grid, planButton, transacButton,logoutButton);
         sum.setAlignment(Pos.CENTER);
         sum.setSpacing(10);
         StackPane root = new StackPane(bgView, sum);
