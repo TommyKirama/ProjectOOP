@@ -1,4 +1,4 @@
-package com.mycompany.projectoop;
+package javafx.example.groupprojecttest2;
 
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -34,7 +34,7 @@ public class Dashboard {
         Font font1 = Font.font("Courier New", FontWeight.BOLD, FontPosture.ITALIC, 12);
         Font font2 = Font.font("Unicorn", FontWeight.BOLD, FontPosture.ITALIC, 20);
         BorderStroke stroke1 = new BorderStroke(Color.PURPLE, BorderStrokeStyle.SOLID, new CornerRadii(0), new BorderWidths(2));
-        Image bg = new Image("file:///D:\\MyProperties\\CSCI 1301 Sect 07 (OOP)OBJECT ORIENTED PROGRAMMING\\GroupProjectTest2\\bank.JPG");
+        Image bg = new Image("file:///D:\\MyProperties\\CSCI 1301 Sect 07 (OOP)OBJECT ORIENTED PROGRAMMING\\GroupProjectTest2\\image.JPG");
         ImageView bgView = new ImageView(bg);
         bgView.setFitWidth(width);
         bgView.setFitHeight(height);
@@ -149,7 +149,7 @@ public class Dashboard {
         Button transacButton = new Button("Make Transaction");
         transacButton.setOnAction(e -> {
             Transaction transaction = new Transaction(user, userManager);
-            transaction.displayTransaction();
+                transaction.displayTransaction();
             dashboardStage.close();
         });
 
