@@ -1,4 +1,5 @@
-package javafx.example.groupprojecttest2;
+package com.mycompany.projectoop;
+
 
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -16,7 +17,7 @@ import javafx.geometry.HPos;
 public class Transaction {
     private User user;
     private UserAuthentication userManager;
-    private static final String TRANSACDIRECTORY_PATH = "D:\\MyProperties\\CSCI 1301 Sect 07 (OOP)OBJECT ORIENTED PROGRAMMING\\GroupProjectTest2";
+    private static final String TRANSACDIRECTORY_PATH = "C:\\Users\\acerc\\OneDrive\\Documents\\NetBeansProjects\\ProjectOOP\\Transaction History";
     private GridPane inputGrid = new GridPane();
 
     public Transaction(User user, UserAuthentication userManager) {
@@ -86,7 +87,7 @@ public class Transaction {
         TextField amountField = new TextField();
         Label dateLabel = new Label("Date:");
         DatePicker datePicker = new DatePicker();
-        Label categoryLabel = new Label("Category:");
+        Label categoryLabel = new Label("Type:");
         ComboBox<String> categoryField = new ComboBox<>();
         // Populate the ComboBox with categories from BudgetPlanning
         categoryField.getItems().addAll(new BudgetPlanning(user, userManager).getCategories());
@@ -219,8 +220,7 @@ public class Transaction {
                     if (line.startsWith(category + ",")) {
                         categoryFound = true;
                         String[] parts = line.split(",");
-                        double currentExpenses = Double.parseDouble(parts[1]);
-                        double newExpenses = currentExpenses + amountValue;
+                        double newExpenses =  amountValue;
                         lines.add(parts[0] + "," + newExpenses + "," + parts[2] + "," + parts[3]);
                         showNoti("Status", "Expenses is succesfully added.");
 
