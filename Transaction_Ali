@@ -17,6 +17,7 @@ public class Transaction {
     private User user;
     private UserAuthentication userManager;
     private static final String TRANSACDIRECTORY_PATH = "D:\\MyProperties\\CSCI 1301 Sect 07 (OOP)OBJECT ORIENTED PROGRAMMING\\GroupProjectTest2";
+    private GridPane inputGrid = new GridPane();
 
     public Transaction(User user, UserAuthentication userManager) {
         this.user = user;
@@ -31,16 +32,16 @@ public class Transaction {
         // Table for displaying Transaction info
         TableView<String> tableView = new TableView<>();
         TableColumn<String, String> dateCol = new TableColumn<>("Date");
-        TableColumn<String, String> categoryCol = new TableColumn<>("Category");
+        TableColumn<String, String> TypeCol = new TableColumn<>("type");
         TableColumn<String, String> amountCol = new TableColumn<>("Amount");
-        TableColumn<String, String> descCol = new TableColumn<>("Description");
+        TableColumn<String, String> categoryCol = new TableColumn<>("Category");
 
         dateCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[0]));
-        categoryCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[1]));
+        TypeCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[1]));
         amountCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[2]));
-        descCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[3]));
+        categoryCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[3]));
 
-        tableView.getColumns().addAll(dateCol, categoryCol, amountCol, descCol);
+        tableView.getColumns().addAll(dateCol, TypeCol, amountCol, categoryCol);
 
 
         // Load data from user's text file
@@ -72,33 +73,50 @@ public class Transaction {
         tableView.setStyle("-fx-column-reorder-disabled: true;");
         tableView.setStyle("-fx-padding: 0 0;");
         dateCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
-        categoryCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
+        TypeCol.setStyle("-fx-border-width: 0 1px 0 0; -fx-border-color: black;");
         amountCol.setStyle("-fx-border-width: 0 1px 0 1px; -fx-border-color: black;");
-        descCol.setStyle("-fx-border-width: 0 0 0 1px; -fx-border-color: black;");
+        categoryCol.setStyle("-fx-border-width: 0 0 0 1px; -fx-border-color: black;");
 
         // Labels and TextFields for input
-        Label categoryLabel = new Label("Income/Expense::");
-        ComboBox<String> categoryField = new ComboBox<>();
-        categoryField.getItems().addAll("Income", "Expense");
+        Label typeLabel = new Label("Income/Expense::");
+        ComboBox<String> typeField = new ComboBox<>();
+        typeField.getItems().addAll("Income", "Expense");
 
         Label amountLabel = new Label(" Amount:");
         TextField amountField = new TextField();
         Label dateLabel = new Label("Date:");
         DatePicker datePicker = new DatePicker();
-        Label descLabel = new Label(" Description:");
-        TextField descField = new TextField();
+        Label categoryLabel = new Label("Category:");
+        ComboBox<String> categoryField = new ComboBox<>();
+        // Populate the ComboBox with categories from BudgetPlanning
+        categoryField.getItems().addAll(new BudgetPlanning(user, userManager).getCategories());
+        //category field appear for income
+        Label categoryIncomeLabel = new Label(" Category:");
+        TextField categoryIncomeField = new TextField();
+        // Add category field only if Expense is selected
+        typeField.valueProperty().addListener((observable, oldValue, newValue) -> {
+            inputGrid.getChildren().remove(categoryLabel);
+            inputGrid.getChildren().remove(categoryField);
+            inputGrid.getChildren().remove(categoryIncomeLabel);
+            inputGrid.getChildren().remove(categoryIncomeField);
+            if ("Income".equals(newValue)) {
+                inputGrid.addRow(3, categoryLabel, categoryField);
+            } else if ("Expense".equals(newValue)) {
+                inputGrid.addRow(3, categoryIncomeLabel, categoryIncomeField);
+            }
+        });
 
         // Button to add expense
         Button addButton = new Button("Add Transaction");
         addButton.setOnAction(e -> {
-            String category = categoryField.getValue();
-            if("Expense".equals(category)){
-                addExpense(descField.getText(), amountField.getText());
+            String type = typeField.getValue();
+            if("Expense".equals(type)){
+                addExpense(categoryField.getValue(), amountField.getText());
                 String date = datePicker.getValue().toString();
                 String amount = amountField.getText();
-                String description = descField.getText();
+                String category = categoryField.getValue();
 
-                String csvLine = String.join(",", date, category, amount, description);
+                String csvLine = String.join(",", date, type, amount, category);
 
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(TRANSACDIRECTORY_PATH + "\\" + user.getUsername() + "transac.txt", true))) {
                     writer.write(csvLine);
@@ -107,14 +125,13 @@ public class Transaction {
                     ioException.printStackTrace();
                 }
             }
-            else if("Income".equals(category)){
-                addIncome(descField.getText(), amountField.getText());
+            else if("Income".equals(type)){
+                addIncome(categoryIncomeField.getText(), amountField.getText());
                 String date = datePicker.getValue().toString();
-
                 String amount = amountField.getText();
-                String description = descField.getText();
+                String categoryIncome = categoryIncomeField.getText();
 
-                String csvLine = String.join(",", date, category, amount, description);
+                String csvLine = String.join(",", date, type, amount, categoryIncome);
 
                 try (BufferedWriter writer = new BufferedWriter(new FileWriter(TRANSACDIRECTORY_PATH + "\\" + user.getUsername() + "transac.txt", true))) {
                     writer.write(csvLine);
@@ -125,14 +142,14 @@ public class Transaction {
             }
 
             else
-                showAlert("Invalid Input", "Catergory should only be Income or Expenses.");
+                showAlert("Invalid Input", "Type should only be Income or Expenses.");
         });
         // Button to close transaction
         Button doneButton = new Button("Done");
         doneButton.setOnAction(e -> {
             stage.close();
             new Dashboard(user, userManager);
-        });
+            });
 
         //delete row from table
         Button deleteButton = new Button("Delete");
@@ -152,12 +169,13 @@ public class Transaction {
         inputGrid.setVgap(10);
         inputGrid.setHgap(10);
         inputGrid.addRow(0, dateLabel, datePicker);
-        inputGrid.addRow(1, categoryLabel, categoryField);
+        inputGrid.addRow(1, typeLabel, typeField);
         inputGrid.addRow(2, amountLabel, amountField);
-        inputGrid.addRow(3, descLabel, descField);
-        inputGrid.add(addButton, 0, 4);
-        inputGrid.add(doneButton, 1, 4);
-        inputGrid.add(deleteButton, 2, 4);
+        inputGrid.addRow(3, categoryLabel, categoryField);
+        inputGrid.addRow(4, categoryIncomeLabel, categoryIncomeField);
+        inputGrid.add(addButton, 0, 5);
+        inputGrid.add(doneButton, 1, 5);
+        inputGrid.add(deleteButton, 2, 5);
 
         GridPane mainGrid = new GridPane();
         mainGrid.setPadding(new Insets(20));
@@ -187,7 +205,6 @@ public class Transaction {
             }
         }
     }
-
 
     private void addExpense(String category, String amount) {
         try {
