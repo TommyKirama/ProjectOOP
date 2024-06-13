@@ -38,6 +38,7 @@ public class Dashboard {
         // Accessories
         Font font1 = Font.font("Courier New", FontWeight.BOLD, FontPosture.ITALIC, 18);
         Font font2 = Font.font("Unicorn", FontWeight.BOLD, FontPosture.ITALIC, 20);
+        //tukar ke directory masing
         Image bg = new Image("file:///C:\\Users\\acerc\\OneDrive\\Documents\\NetBeansProjects\\ProjectOOP\\src\\main\\java\\com\\mycompany\\projectoop\\bgjavafx.jpg");
         ImageView bgView = new ImageView(bg);
         bgView.setFitWidth(width);
