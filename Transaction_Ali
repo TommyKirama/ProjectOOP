@@ -1,8 +1,8 @@
-package com.mycompany.projectoop;
-
+package javafx.example.groupprojecttest2;
 
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
@@ -13,11 +13,10 @@ import java.util.Scanner;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.geometry.HPos;
 
-
 public class Transaction {
     private User user;
     private UserAuthentication userManager;
-    private static final String TRANSACDIRECTORY_PATH = "C:\\Users\\acerc\\OneDrive\\Documents\\NetBeansProjects\\ProjectOOP\\Transaction History";
+    private static final String TRANSACDIRECTORY_PATH = "D:\\MyProperties\\CSCI 1301 Sect 07 (OOP)OBJECT ORIENTED PROGRAMMING\\GroupProjectTest2";
     private GridPane inputGrid = new GridPane();
 
     public Transaction(User user, UserAuthentication userManager) {
@@ -43,7 +42,6 @@ public class Transaction {
         categoryCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().split(",")[3]));
 
         tableView.getColumns().addAll(dateCol, TypeCol, amountCol, categoryCol);
-
 
         // Load data from user's text file
         try {
@@ -87,7 +85,7 @@ public class Transaction {
         TextField amountField = new TextField();
         Label dateLabel = new Label("Date:");
         DatePicker datePicker = new DatePicker();
-        Label categoryLabel = new Label("Type:");
+        Label categoryLabel = new Label("Category:");
         ComboBox<String> categoryField = new ComboBox<>();
         // Populate the ComboBox with categories from BudgetPlanning
         categoryField.getItems().addAll(new BudgetPlanning(user, userManager).getCategories());
@@ -106,9 +104,14 @@ public class Transaction {
                 inputGrid.addRow(3, categoryIncomeLabel, categoryIncomeField);
             }
         });
+        // Create a PieChart
+        PieChart pieChart = new PieChart();
+        pieChart.setTitle("Expenses Analysis");
 
         // Button to add expense
         Button addButton = new Button("Add Transaction");
+        addButton.setPrefWidth(120); // Set preferred width
+        addButton.setPrefHeight(10); // Set preferred height
         addButton.setOnAction(e -> {
             String type = typeField.getValue();
             if("Expense".equals(type)){
@@ -144,17 +147,18 @@ public class Transaction {
 
             else
                 showAlert("Invalid Input", "Type should only be Income or Expenses.");
+            updatePieChart(pieChart);
         });
         // Button to close transaction
         Button doneButton = new Button("Done");
         doneButton.setOnAction(e -> {
             stage.close();
             new Dashboard(user, userManager);
-            });
+        });
 
         //delete row from table
         Button deleteButton = new Button("Delete");
-        deleteButton.setPrefWidth(100);
+        deleteButton.setPrefWidth(80);
         deleteButton.setOnAction(actionEvent -> {
             int  row = tableView.getSelectionModel().getSelectedIndex();
             try {
@@ -184,13 +188,17 @@ public class Transaction {
         mainGrid.setHgap(20);
         mainGrid.add(inputGrid, 0, 0);
         mainGrid.add(tableView, 1, 0);
+        mainGrid.add(pieChart, 0, 1, 2, 1); // Add PieChart to the grid
         GridPane.setHalignment(tableView, HPos.CENTER);
+        GridPane.setHalignment(pieChart, HPos.CENTER);
 
-        Scene scene = new Scene(mainGrid, 800, 400);
+        Scene scene = new Scene(mainGrid, 800, 600);
         stage.setScene(scene);
         stage.show();
+
+        updatePieChart(pieChart);
     }
-//update file after deleting the row
+    //update file after deleting the row
     private void delete(int row, TableView<String> tableView) throws IOException {
         if (row >= 0) {
             tableView.getItems().remove(row);
@@ -206,7 +214,7 @@ public class Transaction {
             }
         }
     }
-
+//calculation and update the file
     private void addExpense(String category, String amount) {
         try {
             double amountValue = Double.parseDouble(amount);
@@ -220,7 +228,7 @@ public class Transaction {
                     if (line.startsWith(category + ",")) {
                         categoryFound = true;
                         String[] parts = line.split(",");
-                        double newExpenses =  amountValue;
+                        double newExpenses = amountValue;
                         lines.add(parts[0] + "," + newExpenses + "," + parts[2] + "," + parts[3]);
                         showNoti("Status", "Expenses is succesfully added.");
 
@@ -249,7 +257,6 @@ public class Transaction {
         } catch (IOException e) {
             showAlert("File Error", "Could not read or write the user file.");
         }
-
     }
 
     private void addIncome(String category, String amount) {
@@ -257,7 +264,6 @@ public class Transaction {
             double amountValue = Double.parseDouble(amount);
             List<String> lines = new ArrayList<>();
             boolean incomeUpdated = false;
-
             // Read and update the user's file
             try (BufferedReader reader = new BufferedReader(new FileReader(user.getUsername() + ".txt"))) {
                 String line;
@@ -268,7 +274,6 @@ public class Transaction {
                     lines.add(String.valueOf(newIncome));
                     incomeUpdated = true;
                 }
-
                 // Read the remaining lines
                 while ((line = reader.readLine()) != null) {
                     lines.add(line);
@@ -287,7 +292,6 @@ public class Transaction {
                     writer.newLine();
                 }
             }
-
             showNoti("Status", "Income is successfully added.");
             System.out.println("Income Added: $" + amountValue);
         } catch (NumberFormatException e) {
@@ -296,7 +300,43 @@ public class Transaction {
             showAlert("File Error", "Could not read or write the user file.");
         }
     }
+private void updatePieChart(PieChart pieChart) {
+    pieChart.getData().clear(); // Clear existing data
 
+    try {
+        File userTransFile = new File(TRANSACDIRECTORY_PATH + "\\" + user.getUsername() + "transac.txt");
+        Scanner scanner = new Scanner(userTransFile);
+        List<PieChart.Data> pieChartData = new ArrayList<>();
+
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            String[] data = line.split(",");
+            String type = data[1]; // Assuming type is in the 2nd column
+            String category = data[3]; // Assuming category is in the 4th column
+            double amount = Double.parseDouble(data[2]); // Assuming amount is in the 3rd column
+
+            if ("Expense".equals(type)) {
+                boolean categoryExists = false;
+                for (PieChart.Data pieData : pieChartData) {
+                    if (pieData.getName().equals(category)) {
+                        pieData.setPieValue(pieData.getPieValue() + amount);
+                        categoryExists = true;
+                        break;
+                    }
+                }
+
+                if (!categoryExists) {
+                    pieChartData.add(new PieChart.Data(category, amount));
+                }
+            }
+        }
+
+        pieChart.getData().addAll(pieChartData);
+        scanner.close();
+    } catch (FileNotFoundException e) {
+        e.printStackTrace();
+    }
+}
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
